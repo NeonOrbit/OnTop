@@ -1,5 +1,5 @@
 ﻿
-AppName := "OnTop", Version := "1.0.0"
+AppName := "OnTop", Version := "1.0.1"
 ;@Ahk2Exe-Let Name = %A_PriorLine~U)^(.+"){1}(.+)".*$~$2%
 ;@Ahk2Exe-Let Version = %A_PriorLine~U)^(.+"){3}(.+)".*$~$2%
 ;@Ahk2Exe-ExeName %A_ScriptName~\.[^\.]+$~ %%U_Version%.exe%
