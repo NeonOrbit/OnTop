@@ -1,5 +1,5 @@
 
-APP_NAME := "OnTop", APP_VERSION := "1.0.1"
+APP_NAME := "OnTop", APP_VERSION := "2.0.0"
 
 ;@Ahk2Exe-Let Name = %A_PriorLine~U)^(.+"){1}(.+)".*$~$2%
 ;@Ahk2Exe-Let Version = %A_PriorLine~U)^(.+"){3}(.+)".*$~$2%
