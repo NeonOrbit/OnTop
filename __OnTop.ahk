@@ -1,298 +1,169 @@
 ﻿
-AppName := "OnTop", Version := "1.0.1"
-;@Ahk2Exe-Let Name = %A_PriorLine~U)^(.+"){1}(.+)".*$~$2%
-;@Ahk2Exe-Let Version = %A_PriorLine~U)^(.+"){3}(.+)".*$~$2%
-;@Ahk2Exe-ExeName %A_ScriptName~\.[^\.]+$~ %%U_Version%.exe%
-;@Ahk2Exe-UpdateManifest 1, %U_Name%, %U_Version%.0
-;@Ahk2Exe-SetName %U_Name%
-;@Ahk2Exe-SetVersion %U_Version%.0
-;@Ahk2Exe-SetDescription %U_Name%
-;@Ahk2Exe-SetCopyright © %U_Name% Software ™
-;@Ahk2Exe-SetMainIcon Resource\Icon.ico
-;@Ahk2Exe-AddResource Resource\Icon.ico, 160
-;@Ahk2Exe-AddResource Resource\Icon.ico, 206
-;@Ahk2Exe-AddResource Resource\IconAlt.ico, 207
-;@Ahk2Exe-AddResource Resource\IconAlt.ico, 208
-/*@Ahk2Exe-Keep
-#ErrorStdOut
-#SingleInstance Ignore
-*/
-
-#NoEnv
-#Persistent
-#MenuMaskKey vkFF
-
+#Include E_Config.ahk
 #Include E_Trayer.ahk
 #Include E_Utility.ahk
+#Include E_Windows.ahk
+#Include E_Services.ahk
 
-SendMode Input
-SetTitleMatchMode 1
-DetectHiddenWindows On
+Global Preference := ExMap()
+Global ProcessList := ExSet()
 
-Global Preference   := []
-Global ProcessList  := []
+Global SystemTray := Trayer()
+Global AppService := Services()
 
-Global LogBuffer    := []
-Global LogFlushed   := 0
-Global WindowEvent  := 0
-
-Global HKWindSet    := "#SPACE"
-Global HKWindRem    := "#!SPACE"
-Global HKProgSet    := "#+SPACE"
-Global HKProgRem    := "#!+SPACE"
-
-Global AppName      := AppName
-Global Version      := Version
-Global AppIcon      := 0000206
-Global AppIconAlt   := 0000207
-Global LogFileDir   := AppName "Logs"
-Global DefaultDir   := A_AppData "\" AppName
-Global ResourceDir  := A_ScriptDir "\Resource"
-Global HelpFile     := DefaultDir "\" AppName "Help.txt"
-Global ConfigFile   := DefaultDir "\" AppName "Config.ini"
-
-Try {
+try {
     AppStart()
-} catch e {
+} catch as e {
     HandleError(e)
 }
-OnExit("OnAppExit")
+
+Initialize()
+{
+    UpdatePreference(ID_APPINIT, true)
+    UpdatePreference(ID_SERVICE, true)
+    for key, value in APP_DEFAULT_HOTKEYS {
+        UpdatePreference(key, value)
+    }
+}
 
 AppStart()
 {
-    FileCreateDir % DefaultDir
-    SetWorkingDir % DefaultDir
-    FileCreateDir % LogFileDir
-    LogFlushed := GetTime()
-    WriteLog("[App Started]")
-    MenuBuilder()
     FetchAppData()
-    if (!Preference.HasKey("AppInit"))
-        InitializeApp()
-    flag := (Preference["Service"]) ? 1 : 2
-    Service(flag)
-    UpdateAllWindow(Preference["Service"])
+    if (!Preference[ID_APPINIT]) {
+        Initialize()
+    }
+    SystemTray.init(Preference[ID_SERVICE])
+    AppService.setWindowEventCallback(HandleWindowEvent)
+    AppService.setHotKeyCallback(HandleHotkeyEvent)
+    AppService.setHotKeys(Preference)
+    UpdateAppService()
 }
 
-OnAppExit()
+OnExit AppExit
+AppExit(reason, code)
 {
-    Try {
-        UpdateAllWindow(false)
-        WriteLog("[App Terminated]", true)
+    try {
+        AppService.unregister()
+        UpdateAllWindows(false)
     }
-    return 0
 }
 
-InitializeApp()
+OnError UncaughtError
+UncaughtError(error, mode)
 {
-    GenerateHelpFile()
-    UpdatePreference("AppInit", true)
-    UpdatePreference("Service", true)
-    UpdatePreference("Logging", false)
-    UpdatePreference("LogFileMax", 30)
-    UpdatePreference("HKWindSet", HKWindSet)
-    UpdatePreference("HKWindRem", HKWindRem)
-    UpdatePreference("HKProgSet", HKProgSet)
-    UpdatePreference("HKProgRem", HKProgRem)
+    warning := mode != "ExitApp" ? "WARNING!" : ""
+    HandleError(error, !warning, warning)
+    return warning ? 1 : 0
 }
 
-FetchAppData()
-{
-    Preference := []
-    ProcessList := []
-    IniRead, pref, %ConfigFile%, Preference
-    for index, value in StrSplit(pref, "`n") {
-        item := StrSplit(value, "=")
-        Preference[item[1]] := item[2]
-    }
-    IniRead, process, %ConfigFile%, ProcessList
-    for index, value in StrSplit(process, "`n") {
-        ProcessList[StrSplit(value, "=")[1]] := "on"
-    }
+UpdateAppService(state?) {
+    if (!IsSet(state))
+        state := Preference[ID_SERVICE]
+    else
+        UpdatePreference(ID_SERVICE, state)
+    if (state)
+        AppService.register()
+    else
+        AppService.unregister()
+    SystemTray.update(state)
+    UpdateAllWindows(state)
+}
+
+RefreshApp() {
+    FetchAppData()
+    AppService.setHotKeys(Preference)
+    UpdateAppService()
 }
 
 ResetAppData()
 {
-    Preference := []
-    ProcessList := []
-    FileDelete, %ConfigFile%
-    InitializeApp()
+    Preference.clear()
+    ProcessList.clear()
+    FileDelete APP_CONFIG_FILE
+    Initialize()
 }
 
-UpdateHotKey()
-{
-    try {
-        key := "#+c"
-        HotKey, % key, PinWindow
-        HotKey, % key, UnpinWindow
-        HotKey, % key, PinProgram
-        HotKey, % key, UnpinProgram
-    } catch e {
-        HandleError(e)
+HandleWindowEvent(process, window) {
+    if ProcessList.has(process) and IsValidWindow(process, window) {
+        UpdateWindowState(window)
     }
 }
 
-UpdatePreference(key, val := "")
+HandleHotkeyEvent(pin, program) {
+    try {
+        hWindow := WinGetID("A")
+        if (!program) {
+            ToggleAlwaysOnTop(hWindow, pin)
+        } else {
+            wProcess := GetWindowProcess(hWindow)
+            if IsValidWindow(wProcess, hWindow) {
+                if (pin or ProcessList.has(wProcess)) {
+                    UpdateProcessList(wProcess, pin)
+                    UpdateWindowState(hWindow, wProcess, pin)
+                }
+            }
+        }
+    } catch as e {
+        msg := "Failed to " . (pin ? "pin" : "unpin")
+        msg .= " the " . (program ? "program" : "window")
+        details := IsSet(hWindow) ? ": " . GetWindowDetails(hWindow) : ""
+        HandleError(e, false, msg . details)
+    }
+}
+
+UpdateAllWindows(state := true)
 {
-    Preference[key] := val
-    IniWrite, %val%, %ConfigFile%, Preference, %key%
+    for item in ProcessList {
+        UpdateWindowState(, item, state)
+    }
+}
+
+FetchAppData()
+{
+    Preference.clear()
+    ProcessList.clear()
+    pref := IniRead(APP_CONFIG_FILE, "Preference",, "")
+    for index, value in StrSplit(pref, "`n") {
+        item := StrSplit(value, "=")
+        Preference[item[1]] := item[2]
+    }
+    process := IniRead(APP_CONFIG_FILE, "ProcessList",, "")
+    for index, value in StrSplit(process, "`n") {
+        ProcessList.add(StrSplit(value, "=")[1])
+    }
+}
+
+UpdatePreference(key, value)
+{
+    Preference[key] := value
+    IniWrite(value, APP_CONFIG_FILE, "Preference", key)
 }
 
 UpdateProcessList(process, add)
 {
     if (add) {
-        ProcessList[process] := true
-        IniWrite, %true%, %ConfigFile%, ProcessList, %process%
+        ProcessList.add(process)
+        IniWrite(true, APP_CONFIG_FILE, "ProcessList", process)
     } else {
-        ProcessList.Delete(process)
-        IniDelete, %ConfigFile%, ProcessList, %process%
+        ProcessList.delete(process)
+        IniDelete(APP_CONFIG_FILE, "ProcessList", process)
     }
 }
 
-IsValidWindow(process, uid)
+HandleError(e, fatal := true, msg := "")
 {
-    WinGetTitle, title, ahk_id %uid%
-    if (process and title ~= ".*\S.*"
-        and !(process = AppName . ".exe")) {
-        if (process = "explorer.exe") {
-            WinGetClass, class, ahk_id %uid%
-            if !(class = "CabinetWClass" or class = "#32770") {
-                return false
-            }
-        }
-        return true
-    }
-    return false
+    errMsg := (msg ? msg : "An Error Occured!") . "`n`n"
+    if (e.message ~= ".*\S.*")
+        errMsg .= "Issue:  " e.message "`n"
+    if (e.what ~= ".*\S.*")
+        errMsg .= "From:  " e.what "`n"
+    if (e.extra ~= ".*\S.*")
+        errMsg .= "Hint:  " e.extra "`n"
+    If (!A_IsCompiled)
+        errMsg .= "`n" e.file ":" e.line "`n`n"
+    if (fatal)
+        errMsg .= "The program will exit."
+    MsgBox(errMsg,, 0x1030)
+    if (fatal)
+        ExitApp 1
 }
-
-ToggleAlwaysOnTop(uid, state)
-{
-    ontop := state ? "on" : "off"
-    Loop, 3 {
-        WinGet, style, ExStyle, ahk_id %uid%
-        if (((style & 0x8) && true) = state)
-            break
-        WinSet, AlwaysOnTop, %ontop%, ahk_id %uid%
-    }
-}
-
-GetActiveProcess(uid) {
-    WinGet, process, ProcessName, ahk_id %uid%
-    if (process = "ApplicationFrameHost.exe") {
-        ControlGet, hwnd, Hwnd,
-            , Windows.UI.Core.CoreWindow1, ahk_id %uid%
-        process := ""
-        if (hwnd) {
-            WinGet, process, ProcessName, ahk_id %hwnd%
-        }
-    }
-    return process
-}
-
-UpdateAllWindow(state, list := "")
-{
-    if (!list)
-        list := ProcessList
-    for key, value in list {
-        UpdateWindowState(, key, state)
-    }
-}
-
-UpdateWindowState(uid := "", process := "", state := true)
-{
-    list := ""
-    if (process) {
-        DetectHiddenWindows, off
-        WinGet, list, List, ahk_exe %process%
-        DetectHiddenWindows, on
-    }
-    if (list) {
-        loop %list% {
-            _id := list%list%
-            if IsValidWindow(process, _id) {
-                ToggleAlwaysOnTop(_id, state)
-            }
-            list--
-        }
-    } else if (uid) {
-        ToggleAlwaysOnTop(uid, state)
-        parent := DllCall("GetParent", UInt, uid)
-        if (parent and IsValidWindow("-", parent)) {
-            sleep 10
-            ToggleAlwaysOnTop(parent, state)
-        }
-    }
-}
-
-OnActiveWindowChange(hWinEventHook, vEvent, hWnd)
-{
-    Static _ := DllCall("user32\SetWinEventHook"
-                        , UInt, 0x3, UInt, 0x3, Ptr, 0, Ptr
-                        , RegisterCallback("OnActiveWindowChange")
-                        , UInt, 0, UInt, 0, UInt, 0, Ptr)
-    Try {
-        WindowEvent := token := GetTime()
-        while true {
-            process := GetActiveProcess(hWnd)
-            if (process or token < WindowEvent or A_Index > 50)
-                break
-            sleep 50
-        }
-        if ProcessList.HasKey(process) and IsValidWindow(process, hWnd) {
-            UpdateWindowState(hWnd)
-        }
-    } Catch E {
-        WriteLog("Error[OnActiveWindowChange]: " E.Message)
-    }
-}
-
-
-;; Register Hotkeys
-
-#SPACE::    ; Win+Space to pin a single window
-Suspend
-Try {
-    WinGet, hWindow, ID, A
-    ToggleAlwaysOnTop(hWindow, true)
-} Catch E {
-    HandleError(E, false, "Failed to pin the window!")
-}
-Return
-
-#!SPACE::   ; Win+Alt+Space to unpin a single window
-Suspend
-Try {
-    WinGet, hWindow, ID, A
-    ToggleAlwaysOnTop(hWindow, false)
-} catch e {
-    HandleError(e, false, "Failed to unpin the window!")
-}
-Return
-
-#+SPACE::   ; Win+Shift+Space to pin a program
-Try {
-    WinGet, hWindow, ID, A
-    wProcess := GetActiveProcess(hWindow)
-    if IsValidWindow(wProcess, hWindow) {
-        UpdateProcessList(wProcess, true)
-        UpdateWindowState(hWindow, wProcess, true)
-    }
-} catch e {
-    HandleError(e, false, "Failed to pin the program!")
-}
-Return
-
-#!+SPACE::  ; Win+Shift+Alt+Space unpin a program
-Try {
-    WinGet, hWindow, ID, A
-    wProcess := GetActiveProcess(hWindow)
-    if IsValidWindow(wProcess, hWindow) {
-        if ProcessList.HasKey(wProcess) {
-            UpdateProcessList(wProcess, false)
-            UpdateWindowState(hWindow, wProcess, false)
-        }
-    }
-} catch e {
-    HandleError(e, false, "Failed to unpin the program!")
-}
-Return

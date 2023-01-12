@@ -1,115 +1,110 @@
 ﻿
-MenuBuilder()
-{
-    traylist := AppName
-    traylist .= ",Service,Refresh,ResetAll,Preference,,"
-    traylist .= "AppList,Supports,,Exit"
-    servicesub := "Enable,Disable"
-    supportsub := "Log,Help,About"
-    Menu, Tray, NoStandard
-    Loop, parse, traylist, `,
+TrayListMain := A_ScriptName ",Service,Refresh,ResetAll,,AppList,Support,,Exit"
+TrayListSrvc := "Enable,Disable"
+TrayListSupp := "Help,Update,About"
+
+class Trayer {
+    serviceSub := Menu()
+    supportSub := Menu()
+    eventHandler := this.handleEvents.bind(this)
+
+    init(state) {
+        A_TrayMenu.delete()
+        Loop Parse, TrayListMain, ","
+        {
+            if (!A_LoopField)
+                A_TrayMenu.add()
+            else
+                A_TrayMenu.add(A_LoopField, this.eventHandler)
+        }
+        Loop Parse, TrayListSrvc, ","
+            this.serviceSub.add(A_LoopField, this.eventHandler)
+        Loop Parse, TrayListSupp, ","
+            this.supportSub.add(A_LoopField, this.eventHandler)
+        A_TrayMenu.disable("1&")
+        A_TrayMenu.add("Service", this.serviceSub)
+        A_TrayMenu.add("Support", this.supportSub)
+    }
+
+    update(state)
     {
-        if (!A_LoopField)
-            Menu, Tray, Add
-        else
-            Menu, Tray, Add, % A_LoopField, MenuHandler
+        position := state ? 1 : 2
+        icon := state ? -APP_ICON : -ALT_ICON
+        srvs := state ? "Running" : "Stopped"
+        if (A_IsCompiled) {
+            TraySetIcon(A_ScriptFullPath, icon, 1)
+        }
+        A_TrayMenu.rename("1&", srvs)
+        A_IconTip := A_ScriptName . " (" . srvs . ")"
+        this.serviceSub.check(position . "&")
+        this.serviceSub.uncheck((position ^ 3) . "&")
     }
-    Menu, Tray, Disable, 1&
-    Loop, parse, servicesub, `,
-        Menu, ServiceSub, Add, % A_LoopField, MenuHandler
-    Loop, parse, supportsub, `,
-        Menu, SupportSub, Add, % A_LoopField, MenuHandler
-    Menu, Tray, Add, Service, :ServiceSub
-    Menu, Tray, Add, Supports, :SupportSub
-}
 
-MenuHandler()
-{
-    Switch A_ThisMenuItem {
-        case "Enable", "Disable":
-            Service(A_ThisMenuItemPos)
-        case "Refresh":
-            Refresh()
-        case "ResetAll":
-            Refresh(true)
-        case "Preference":
-            Preferences()
-        case "Log", "Help", "About":
-            Supports(A_ThisMenuItem)
-        case "AppList":
-            AppList()
-        case "Exit":
-            ExitApp
-    }
-}
-
-Service(flag)
-{
-    item := !(flag^1) ? 1 : 2
-    mode := !(flag^1) ? "Off" : "On"
-    stat := !(flag^1) ? true : false
-    icon := !(flag^1) ? -AppIcon : -AppIconAlt
-    srvs := !(flag^1) ? "Running" : "Stopped"
-    Menu, Tray, Rename, 1&, % srvs
-    Menu, ServiceSub, Check, % item "&"
-    Menu, ServiceSub, Uncheck, % (item^3) "&"
-    Menu, Tray, Tip, % AppName " (" srvs ")"
-    If A_IsCompiled
-        Menu, Tray, Icon, % A_ScriptFullPath, % icon, 1
-    UpdateAllWindow(stat)
-    UpdatePreference("Service", stat)
-    Paused := !(flag^1) ? false : true
-    Suspend % mode
-    Pause % mode
-}
-
-Refresh(reset := false)
-{
-    list := ProcessList
-    if (reset) {
-        msg := "Reset app to default?"
-        MsgBox, 0x1134, % AppName, % msg
-        IfMsgBox Yes
-            ResetAppData()
-        else
-            return
-    }
-    FetchAppData()
-    flag := (Preference["Service"]) ? 1 : 2
-    Service(flag)
-    if (reset) {
-        UpdateAllWindow(false, list)
-    }
-    list := []
-}
-
-AppList()
-{
-    list := "Active Apps List:`n`n"
-    if (!ProcessList.count()) {
-        list .= "  List is Empty"
-    } else {
-        for key, value in ProcessList {
-            list .= "  " A_Index ". " key "`n"
+    handleEvents(item, pos, obj)
+    {
+        state := pos = 1 ? true : false
+        switch (item) {
+            case "Enable", "Disable":
+                Critical
+                UpdateAppService(state)
+            case "Refresh":
+                this.refresh()
+            case "ResetAll":
+                this.refresh(true)
+            case "AppList":
+                this.showAppList()
+            case "Help":
+                MsgBox(HelpText,, 0x1000)
+            case "Update":
+                Run UPDATE_URL
+            case "About":
+                MsgBox(AboutText,, 0x1000)
+            case "Exit":
+                ExitApp
         }
     }
-    MsgBox, 0x1000, % AppName, % list
-}
 
-Preferences()
-{
-    Run % ConfigFile
-}
+    refresh(reset := false)
+    {
+        Critical("On")
+        if (reset) {
+            if (MsgBox("Reset to default?",, 0x1134) = "Yes") {
+                UpdateAllWindows(false)
+                ResetAppData()
+            } else {
+                return
+            }
+        }
+        RefreshApp()
+        Critical("Off")
+    }
 
-Supports(item)
-{
-    Switch item {
-        case "Log":
-            Run % LogFileDir
-        case "Help":
-            Run % HelpFile
-        case "About":
-            msg := "© " . AppName . " Software ™"
-            MsgBox, 0x1000, % AppName, % msg
+    showAppList()
+    {
+        list := "Active Apps List:`n`n"
+        if (!ProcessList.count) {
+            list .= "  List is Empty"
+        } else {
+            for item in ProcessList {
+                list .= "  " . A_Index . ". " . item "`n"
+            }
+        }
+        MsgBox(list,, 0x1000)
     }
 }
+
+AboutText := ""
+. APP_NAME . "  (" APP_VERSION . ")`n`n"
+. "Developer:  " . DEVELOPER . "`n`n"
+. "Source Code:  " . SOURCE_SITE . "`n"
+
+HelpText := ""
+. "Features:`n`n"
+. "|-> Pin Window (win+space):  Keeps a window on top of other windows.`n`n"
+. "|-> Unpin Window (win+alt+space):  Removes the ontop ability of a window.`n`n"
+. "|-> Pin Program (win+shift+space):  Keeps an app (not just a window) always on top.`n`n"
+. "|-> Unpin Program (win+shift+alt+space):  Removes the ontop ability of a previously pinned app.`n`n"
+. "`n"
+. "[-] Pin Window* ability is temporary, which means it will remain only until the window is closed.`n"
+. "[-] Pin Program* ability is sticky, it will remain in effect until the user unpin it manually.`n"
+. "`n"
