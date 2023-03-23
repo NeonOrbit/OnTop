@@ -31,6 +31,11 @@ ALT_ICON := 207
 
 ID_APPINIT := "AppInit"
 ID_SERVICE := "Service"
+ID_LOGGING := "Logging"
+ID_LOGFMAX := "LogFMax"
+
+DEFAULT_LOGGING := false
+DEFAULT_LOGFMAX := 100
 
 ID_PIN_WINDOWS := "IdPinWindows"
 ID_CLR_WINDOWS := "IdClrWindows"
@@ -58,9 +63,11 @@ APP_DEFAULT_HOTKEYS := Map(
 
 APP_DEFAULT_DIR := A_AppData . "\" . APP_NAME
 APP_CONFIG_FILE := APP_DEFAULT_DIR . "\Config.ini"
+APP_LOG_FILE_DIR := APP_DEFAULT_DIR . "\LogFiles"
 
 DirCreate APP_DEFAULT_DIR
 SetWorkingDir APP_DEFAULT_DIR
+DirCreate APP_LOG_FILE_DIR
 
 DEVELOPER := "NeonOrbit"
 HELP_URL := "https://neonorbit.github.io/ontop"

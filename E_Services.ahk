@@ -92,6 +92,8 @@ class Services {
                 sleep 10
             }
             callback(GetWindowProcess(hWnd), hWnd)
+        } catch as e {
+            WriteLog("Error[onActiveWindowChange]: " . e.message)
         }
     }
 }

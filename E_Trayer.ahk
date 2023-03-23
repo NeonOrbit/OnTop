@@ -1,7 +1,7 @@
 ﻿
 TrayListMain := A_ScriptName ",Service,Refresh,ResetAll,,AppList,Support,,Exit"
 TrayListSrvc := "Enable,Disable"
-TrayListSupp := "Help,Update,About"
+TrayListSupp := "Log,Help,Update,About"
 
 class Trayer {
     serviceSub := Menu()
@@ -53,6 +53,9 @@ class Trayer {
                 this.refresh(true)
             case "AppList":
                 this.showAppList()
+            case "Log":
+                FlushLog()
+                Run APP_LOG_FILE_DIR
             case "Help":
                 MsgBox(HelpText,, 0x1000)
             case "Update":

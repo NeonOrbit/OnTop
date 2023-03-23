@@ -1,6 +1,7 @@
 ﻿
 #Include E_Config.ahk
 #Include E_Trayer.ahk
+#Include E_Logger.ahk
 #Include E_Utility.ahk
 #Include E_Windows.ahk
 #Include E_Services.ahk
@@ -10,6 +11,7 @@ Global ProcessList := ExSet()
 
 Global SystemTray := Trayer()
 Global AppService := Services()
+Global MainLogger := Logger(APP_LOG_FILE_DIR)
 
 try {
     AppStart()
@@ -21,6 +23,8 @@ Initialize()
 {
     UpdatePreference(ID_APPINIT, true)
     UpdatePreference(ID_SERVICE, true)
+    UpdatePreference(ID_LOGGING, DEFAULT_LOGGING)
+    UpdatePreference(ID_LOGFMAX, DEFAULT_LOGFMAX)
     for key, value in APP_DEFAULT_HOTKEYS {
         UpdatePreference(key, value)
     }
@@ -32,6 +36,8 @@ AppStart()
     if (!Preference[ID_APPINIT]) {
         Initialize()
     }
+    WriteLog("[App Started]")
+    MainLogger.max(Preference[ID_LOGFMAX])
     SystemTray.init(Preference[ID_SERVICE])
     AppService.setWindowEventCallback(HandleWindowEvent)
     AppService.setHotKeyCallback(HandleHotkeyEvent)
@@ -45,6 +51,7 @@ AppExit(reason, code)
     try {
         AppService.unregister()
         UpdateAllWindows(false)
+        WriteLog("[App Terminated]", true)
     }
 }
 
@@ -67,11 +74,13 @@ UpdateAppService(state?) {
         AppService.unregister()
     SystemTray.update(state)
     UpdateAllWindows(state)
+    WriteLog("[Service " (state?"Enabled]":"Disabled]"))
 }
 
 RefreshApp() {
     FetchAppData()
     AppService.setHotKeys(Preference)
+    MainLogger.max(Preference[ID_LOGFMAX])
     UpdateAppService()
 }
 
@@ -86,20 +95,24 @@ ResetAppData()
 HandleWindowEvent(process, window) {
     if ProcessList.has(process) and IsValidWindow(process, window) {
         UpdateWindowState(window)
+        WriteLog("Auto pinned: " . process . " (" . window . ")")
     }
 }
 
 HandleHotkeyEvent(pin, program) {
     try {
         hWindow := WinGetID("A")
+        pin_msg := pin ? "Pinned" : "Unpinned"
         if (!program) {
             ToggleAlwaysOnTop(hWindow, pin)
+            WriteLog(pin_msg . " window: " . hWindow)
         } else {
             wProcess := GetWindowProcess(hWindow)
             if IsValidWindow(wProcess, hWindow) {
                 if (pin or ProcessList.has(wProcess)) {
                     UpdateProcessList(wProcess, pin)
                     UpdateWindowState(hWindow, wProcess, pin)
+                    WriteLog(pin_msg . " program: " . wProcess)
                 }
             }
         }
@@ -150,6 +163,17 @@ UpdateProcessList(process, add)
     }
 }
 
+FlushLog() {
+    WriteLog("", true)
+}
+
+WriteLog(msg, flush := false)
+{
+    if (Preference[ID_LOGGING]) {
+        MainLogger.log(msg, flush)
+    }
+}
+
 HandleError(e, fatal := true, msg := "")
 {
     errMsg := (msg ? msg : "An Error Occured!") . "`n`n"
@@ -162,8 +186,10 @@ HandleError(e, fatal := true, msg := "")
     If (!A_IsCompiled)
         errMsg .= "`n" e.file ":" e.line "`n`n"
     if (fatal)
-        errMsg .= "The program will exit."
+        errMsg .= "The program will exit.`n"
+    WriteLog("Error: " . errMsg)
     MsgBox(errMsg,, 0x1030)
-    if (fatal)
+    if (fatal) {
         ExitApp 1
+    }
 }
