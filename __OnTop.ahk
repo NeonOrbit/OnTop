@@ -5,6 +5,7 @@
 #Include E_Utility.ahk
 #Include E_Windows.ahk
 #Include E_Services.ahk
+#Include E_Shortcuts.ahk
 
 Global Preference := ExMap()
 Global ProcessList := ExSet()
@@ -129,6 +130,17 @@ UpdateAllWindows(state := true)
     for item in ProcessList {
         UpdateWindowState(, item, state)
     }
+}
+
+UpdateHotKeys(hotkeys) {
+    for id in APP_HOTKEY_IDS {
+        UpdatePreference(id, hotkeys[id])
+    }
+    AppService.setHotKeys(Preference)
+}
+
+ShowShortcutsWindow() {
+    Shortcuts(UpdateHotKeys).show(Preference)
 }
 
 FetchAppData()

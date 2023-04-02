@@ -1,5 +1,5 @@
 ﻿
-TrayListMain := A_ScriptName ",Service,Refresh,ResetAll,,AppList,Support,,Exit"
+TrayListMain := A_ScriptName ",Service,Refresh,ResetAll,Shortcuts,,AppList,Support,,Exit"
 TrayListSrvc := "Enable,Disable"
 TrayListSupp := "Log,Help,Update,About"
 
@@ -51,6 +51,8 @@ class Trayer {
                 this.refresh()
             case "ResetAll":
                 this.refresh(true)
+            case "Shortcuts":
+                ShowShortcutsWindow()
             case "AppList":
                 this.showAppList()
             case "Log":
@@ -111,3 +113,4 @@ HelpText := ""
 . "[-] Pin Window* ability is temporary, which means it will remain only until the window is closed.`n"
 . "[-] Pin Program* ability is sticky, it will remain in effect until the user unpin it manually.`n"
 . "`n"
+. "To change the default shortcut keys, please go to OnTop tray menu.`n"
