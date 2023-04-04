@@ -18,7 +18,7 @@
 !include "FileFunc.nsh"
 
 !define APP_NAME "OnTop"
-!define APP_VERSION "2.0.0"
+!define APP_VERSION "2.0.1"
 !define DEVELOPER "NeonOrbit"
 
 !define MUI_ICON "Resource\Icon.ico"
