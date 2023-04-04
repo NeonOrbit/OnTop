@@ -18,12 +18,12 @@ APP_NAME := "OnTop", APP_VERSION := "2.0.0"
 
 ;@Ahk2Exe-Let Name = %A_PriorLine~U)^(.+"){1}(.+)".*$~$2%
 ;@Ahk2Exe-Let Version = %A_PriorLine~U)^(.+"){3}(.+)".*$~$2%
-;@Ahk2Exe-ExeName %U_Name%-v%U_Version%.exe%
+;@Ahk2Exe-ExeName %U_Name%-%U_Version%.exe%
 ;@Ahk2Exe-UpdateManifest 1, %U_Name%, %U_Version%.0
 ;@Ahk2Exe-SetName %U_Name%
 ;@Ahk2Exe-SetVersion %U_Version%.0
 ;@Ahk2Exe-SetDescription %U_Name%
-;@Ahk2Exe-SetCopyright © %U_Name% Software ™
+;@Ahk2Exe-SetCopyright Copyright (C) 2023 NeonOrbit
 ;@Ahk2Exe-SetMainIcon Resource\Icon.ico
 ;@Ahk2Exe-AddResource Resource\Icon.ico, 160
 ;@Ahk2Exe-AddResource Resource\Icon.ico, 206
@@ -31,9 +31,10 @@ APP_NAME := "OnTop", APP_VERSION := "2.0.0"
 ;@Ahk2Exe-AddResource Resource\IconAlt.ico, 208
 
 /*@Ahk2Exe-Keep
-    #SingleInstance Ignore
     TraySetIcon(A_ScriptFullPath, -206, 1)
 */
+
+#SingleInstance Force
 
 SetTitleMatchMode 1
 DetectHiddenWindows true
@@ -84,7 +85,28 @@ DirCreate APP_DEFAULT_DIR
 SetWorkingDir APP_DEFAULT_DIR
 DirCreate APP_LOG_FILE_DIR
 
-DEVELOPER := "NeonOrbit"
-HELP_URL := "https://neonorbit.github.io/ontop"
-UPDATE_URL := "https://github.com/NeonOrbit/OnTop/releases/latest"
-SOURCE_SITE := "Github.com/NeonOrbit/OnTop"
+APP_DEVELOPER := "NeonOrbit"
+APP_UPDATE_URL := "https://github.com/NeonOrbit/OnTop/releases/latest"
+APP_SOURCE_SITE := "Github.com/NeonOrbit/OnTop"
+
+APP_START_HINT := ""
+. APP_NAME . " is minimized to system tray.`n" 
+. "Please right-click on the app tray icon to show the main menu."
+
+APP_ABOUT_TEXT := ""
+. APP_NAME . "  (" APP_VERSION . ")`n`n"
+. "Developer:  " . APP_DEVELOPER . "`n`n"
+. "Source Code:  " . APP_SOURCE_SITE . "`n"
+
+APP_HELP_TEXT := ""
+. "::::::::::-> " . APP_NAME . " (" APP_VERSION . ") <-::::::::::`n`n"
+. "Features:`n`n"
+. "|-> Pin Window (win+space):  Keeps a window on top of other windows.`n`n"
+. "|-> Unpin Window (win+alt+space):  Removes the ontop ability of a window.`n`n"
+. "|-> Pin Program (win+shift+space):  Keeps an app (not just a window) always on top.`n`n"
+. "|-> Unpin Program (win+shift+alt+space):  Removes the ontop ability of a previously pinned app.`n`n"
+. "`n"
+. "[-] Pin Window* ability is temporary, which means it will remain only until the window is closed.`n"
+. "[-] Pin Program* ability is sticky, it will remain in effect until the user unpin it manually.`n"
+. "`n"
+. "To change the default shortcut keys, please go to OnTop tray menu.`n"

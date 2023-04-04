@@ -49,7 +49,8 @@ Initialize()
 AppStart()
 {
     FetchAppData()
-    if (!Preference[ID_APPINIT]) {
+    first := !Preference[ID_APPINIT]
+    if (first) {
         Initialize()
     }
     WriteLog("[App Started]")
@@ -59,6 +60,12 @@ AppStart()
     AppService.setHotKeyCallback(HandleHotkeyEvent)
     AppService.setHotKeys(Preference)
     UpdateAppService()
+    if (first) {
+        MsgBox(APP_HELP_TEXT,, 0x1000)
+    }
+    if ((A_Args.Length < 1) or (A_Args[1] != "--hidden")) {
+        MsgBox(APP_START_HINT,, 0x1000)
+    }
 }
 
 OnExit AppExit

@@ -74,11 +74,11 @@ class Trayer {
                 FlushLog()
                 Run APP_LOG_FILE_DIR
             case "Help":
-                MsgBox(HelpText,, 0x1000)
+                MsgBox(APP_HELP_TEXT,, 0x1000)
             case "Update":
-                Run UPDATE_URL
+                Run APP_UPDATE_URL
             case "About":
-                MsgBox(AboutText,, 0x1000)
+                MsgBox(APP_ABOUT_TEXT,, 0x1000)
             case "Exit":
                 ExitApp
         }
@@ -112,20 +112,3 @@ class Trayer {
         MsgBox(list,, 0x1000)
     }
 }
-
-AboutText := ""
-. APP_NAME . "  (" APP_VERSION . ")`n`n"
-. "Developer:  " . DEVELOPER . "`n`n"
-. "Source Code:  " . SOURCE_SITE . "`n"
-
-HelpText := ""
-. "Features:`n`n"
-. "|-> Pin Window (win+space):  Keeps a window on top of other windows.`n`n"
-. "|-> Unpin Window (win+alt+space):  Removes the ontop ability of a window.`n`n"
-. "|-> Pin Program (win+shift+space):  Keeps an app (not just a window) always on top.`n`n"
-. "|-> Unpin Program (win+shift+alt+space):  Removes the ontop ability of a previously pinned app.`n`n"
-. "`n"
-. "[-] Pin Window* ability is temporary, which means it will remain only until the window is closed.`n"
-. "[-] Pin Program* ability is sticky, it will remain in effect until the user unpin it manually.`n"
-. "`n"
-. "To change the default shortcut keys, please go to OnTop tray menu.`n"
