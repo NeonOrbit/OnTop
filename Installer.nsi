@@ -31,7 +31,6 @@
 
 ; ---------------------- Installer Info ----------------------;
 
-!define MUI_BGCOLOR FFFFFF
 !define MUI_PAGE_HEADER_TEXT "${APP_NAME} ${APP_VERSION} Installation"
 !define MUI_WELCOMEPAGE_TITLE "${MUI_PAGE_HEADER_TEXT}"
 !define MUI_WELCOMEPAGE_TEXT "\
@@ -72,8 +71,6 @@ ShowInstDetails show
 InstallDir "$PROGRAMFILES64\${APP_NAME}"
 InstallDirRegKey HKLM "Software\${APP_NAME}" "Install_Dir"
 
-!insertmacro MUI_FUNCTION_GUIINIT
-
 !insertmacro MUI_PAGE_WELCOME
 !insertmacro MUI_PAGE_COMPONENTS
 !insertmacro MUI_PAGE_DIRECTORY
@@ -81,6 +78,7 @@ InstallDirRegKey HKLM "Software\${APP_NAME}" "Install_Dir"
 !insertmacro MUI_UNPAGE_CONFIRM
 !insertmacro MUI_UNPAGE_INSTFILES
 !insertmacro MUI_PAGE_FINISH
+!insertmacro MUI_LANGUAGE "English"
 
 
 ; ---------------------- Installer Pages ----------------------;
@@ -161,7 +159,6 @@ Section "Uninstall"
     ; Remove registry keys
     DeleteRegKey HKLM "Software\${APP_NAME}"
     DeleteRegKey HKLM "Software\Microsoft\Windows\CurrentVersion\Uninstall\${APP_NAME}"
-    DeleteRegValue HKCU "Software\Microsoft\Windows\CurrentVersion\Run" "${APP_NAME}"
 
     ; Remove shortcuts
     Delete "$DESKTOP\${APP_NAME}.lnk"
