@@ -64,9 +64,9 @@ DEFKEY_PIN_PROGRAM := "#+SPACE"
 DEFKEY_CLR_PROGRAM := "#+!SPACE"
 
 APP_HOTKEY_IDS := [
-    ID_PIN_WINDOWS, 
+    ID_PIN_WINDOWS,
     ID_CLR_WINDOWS,
-    ID_PIN_PROGRAM, 
+    ID_PIN_PROGRAM,
     ID_CLR_PROGRAM
 ]
 
@@ -90,8 +90,8 @@ APP_UPDATE_URL := "https://github.com/NeonOrbit/OnTop/releases/latest"
 APP_SOURCE_SITE := "Github.com/NeonOrbit/OnTop"
 
 APP_START_HINT := ""
-. APP_NAME . " is minimized to system tray.`n" 
-. "Please right-click on the app tray icon to show the main menu."
+. APP_NAME . " is minimized to the system tray.`n"
+. "Please right-click on the app tray icon to display the main menu."
 
 APP_ABOUT_TEXT := ""
 . APP_NAME . "  (" APP_VERSION . ")`n`n"
@@ -101,12 +101,12 @@ APP_ABOUT_TEXT := ""
 APP_HELP_TEXT := ""
 . "::::::::::-> " . APP_NAME . " (" APP_VERSION . ") <-::::::::::`n`n"
 . "Features:`n`n"
-. "|-> Pin Window (win+space):  Keeps a window on top of other windows.`n`n"
-. "|-> Unpin Window (win+alt+space):  Removes the ontop ability of a window.`n`n"
+. "|-> Pin Window (win+space):  Keeps a window on top of all other windows.`n`n"
+. "|-> Unpin Window (win+alt+space):  Removes the AlwaysOnTop ability of a window.`n`n"
 . "|-> Pin Program (win+shift+space):  Keeps an app (not just a window) always on top.`n`n"
-. "|-> Unpin Program (win+shift+alt+space):  Removes the ontop ability of a previously pinned app.`n`n"
+. "|-> Unpin Program (win+shift+alt+space):  Removes the AlwaysOnTop ability of a previously pinned app.`n`n"
 . "`n"
-. "[-] Pin Window* ability is temporary, which means it will remain only until the window is closed.`n"
-. "[-] Pin Program* ability is sticky, it will remain in effect until the user unpin it manually.`n"
+. "[*] The Pin-Window* ability is temporary, which means it will remain active only until the window is closed.`n"
+. "[*] The Pin-Program* ability is sticky, which means it will remain in effect until the user manually unpins it.`n"
 . "`n"
-. "To change the default shortcut keys, please go to OnTop tray menu.`n"
+. "To change the default shortcut keys, please go to the OnTop tray menu.`n"

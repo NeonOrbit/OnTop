@@ -1,21 +1,21 @@
 # OnTop
 
-A simple program for `WindowsOS` that allows you to pin a window to the top of all other windows.
+A simple program for `WindowsOS` that allows you to pin a window on the top of all other windows.
 
 ### Description
-The program allows you to keep a window always on top.
-It has options to pin an app as well (all windows of an app),
-which remembers the app and automatically pin any windows open from it.
+The program allows you to keep a window always on top. 
+It also has options to pin an app (all windows of an app), 
+which remembers the app and automatically pins any windows open from it.
 
 
 ### Features
 - Pin Window `(win+space)`:  Keeps a window on top of all other windows.
-- Unpin Window `(win+alt+space)`:  Removes the ontop ability of a window.
+- Unpin Window `(win+alt+space)`:  Removes the AlwaysOnTop ability of a window.
 - Pin Program `(win+shift+space)`:  Keeps an app (not just a window) always on top.
-- Unpin Program `(win+shift+alt+space)`:  Removes the ontop ability of a previously pinned app.
+- Unpin Program `(win+shift+alt+space)`:  Removes the AlwaysOnTop ability of a previously pinned app.
 
-`Pin Window` ability is temporary, which means it will remain only until the window is closed.  
-`Pin Program` ability is sticky, it will remain in effect until the user unpin it manually.
+The `Pin Window` ability is temporary, which means it will remain active only until the window is closed.
+The `Pin Program` ability is sticky, which means it will remain in effect until the user manually unpins it.
 
 To change the default shortcut keys, please right-click on the `OnTop` tray icon and open the `Shortcuts` menu.
 
