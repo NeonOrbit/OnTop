@@ -14,6 +14,8 @@
  * limitations under the License.
  */
 
+NULL := 0
+
 BypassThisRef(callback, _this, param*) {
     callback(param*)
 }
@@ -27,19 +29,23 @@ class ExMap extends Map {
 
 class ExSet extends Map {
     add(item) {
-        super.set(item, "")
+        super.set(item, NULL)
     }
 
     get(item) {
-        throw Error("Unsupported Operation")
+        ThrowUnsupported
     }
 
     __item[item] {
         get { 
-            throw Error("Unsupported Operation")
+            ThrowUnsupported
         }
         set { 
-            throw Error("Unsupported Operation")
+            ThrowUnsupported
         }
     }
+}
+
+ThrowUnsupported() {
+    throw Error("Unsupported Operation")
 }

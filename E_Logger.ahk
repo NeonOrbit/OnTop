@@ -35,9 +35,9 @@ class Logger {
         if (msg)
             this.logBuffer.push(this.buildMsg(msg))
         if (flush or this.shouldFlush()) {
-            this.logBuffer.push(this.buildMsg("Flushing logs..."))
             try {
                 file := FileOpen(this.getLogFile(), "a")
+                file.writeLine(this.buildMsg("Flushing logs..."))
                 for index, value in this.logBuffer
                     file.writeLine(value)
                 file.writeLine(this.buildMsg("Log Flushed."))
@@ -52,23 +52,23 @@ class Logger {
     cleanOldFiles()
     {
         total := 0
-        filelist := ""
         Loop Files, this.logDir "\*.*"
             total++
-        if (total < (this.maxLogFiles + 10))
-            return
-        Loop Files, this.logDir "\*.*"
-            filelist .= A_LoopFileFullPath "`n"
-        Sort(filelist)
-        maxdel := total - this.maxLogFiles
-        Loop Parse, filelist, "`n", "`r"
-        {
-            if (A_Index > maxdel)
-                break
-            FileDelete A_LoopField
+        if (total > this.maxLogFiles) {
+            filelist := ""
+            Loop Files, this.logDir "\*.*"
+                filelist .= A_LoopFileFullPath "`n"
+            Sort(filelist)
+            maxdel := total - this.maxLogFiles
+            Loop Parse, filelist, "`n", "`r"
+            {
+                if (A_Index > maxdel)
+                    break
+                FileDelete A_LoopField
+            }
         }
     }
-    
+
     shouldFlush() {
         total := this.logBuffer.Length
         elapsed := DateDiff(this.flushedAt, A_NowUTC, "Seconds")

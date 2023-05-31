@@ -22,8 +22,8 @@ HKGUI_ELEMENTS := Map(
     ID_CLR_PROGRAM, "Unpin Program:"
 )
 
-WinKeyId(id) => id . "_wk"
-HotKeyId(id) => id . "_hk"
+IsWinKeyId(id) => InStr(id, "_wk")
+IsHotKeyId(id) => InStr(id, "_hk")
 ToWinKeyId(id) => StrReplace(id, "_hk") . "_wk"
 ToHotKeyId(id) => StrReplace(id, "_wk") . "_hk"
 
@@ -37,10 +37,12 @@ class Shortcuts {
         this.callback := BypassThisRef.bind(callback) 
         this.mainGui := Gui("+AlwaysOnTop")
         for id in HKGUI_ENTRIES {
+            idWinKey := ToWinKeyId(id)
+            idHotKey := ToHotKeyId(id)
             this.mainGui.add("Text", "xm w100", HKGUI_ELEMENTS[id])
-            this.controls[WinKeyId(id)] := this.mainGui.add("CheckBox", "yp h20 Center v" . WinKeyId(id), "Win  +")
-            this.controls[HotKeyId(id)] := this.mainGui.add("Hotkey", "yp h20 v" . HotKeyId(id))
-            this.controls[WinKeyId(id)].onEvent("Click", this.eventHandler)
+            this.controls[idWinKey] := this.mainGui.add("CheckBox", "yp h20 Center v" . idWinKey, "Win  +")
+            this.controls[idHotKey] := this.mainGui.add("Hotkey", "yp h20 v" . idHotKey)
+            this.controls[idWinKey].onEvent("Click", this.eventHandler)
         }
         this.mainGui.add("Button", "x20 vDefault", "Default").onEvent("Click", this.eventHandler)
         this.mainGui.add("Button", "yp vSave",  "Save Shortcuts").onEvent("Click", this.eventHandler)
@@ -57,12 +59,12 @@ class Shortcuts {
             case "Cancel":
                 this.mainGui.destroy()
             default:
-                if (this.controls.has(gc.name)) {
-                    cWin := this.controls[gc.name]
-                    cHKey := this.controls[ToHotKeyId(gc.name)]
-                    cHKey.opt(cWin.value ? "-Limit" : "Limit1")
-                    if (!cWin.value) {
-                        cHKey.value := ""
+                if (this.controls.has(gc.name) and IsWinKeyId(gc.name)) {
+                    cWinKey := this.controls[gc.name]
+                    cHotKey := this.controls[ToHotKeyId(gc.name)]
+                    cHotKey.opt(cWinKey.value ? "-Limit" : "Limit1")
+                    if (!cWinKey.value) {
+                        cHotKey.value := ""
                     }
                 }
         }
@@ -79,13 +81,14 @@ class Shortcuts {
             value := values[key]
             if InStr(value, "#") {
                 limit := "-Limit"
-                this.controls[WinKeyId(key)].value := true
+                this.controls[ToWinKeyId(key)].value := true
                 value := StrReplace(value, "#")
             } else {
                 limit := "Limit1"
             }
-            this.controls[HotKeyId(key)].value := value
-            this.controls[HotKeyId(key)].opt(limit)
+            cHotKey := this.controls[ToHotKeyId(key)]
+            cHotKey.value := value
+            cHotKey.opt(limit)
         }
     }
 
@@ -94,11 +97,10 @@ class Shortcuts {
         hotkeys := Map()
         this.mainGui.opt("+OwnDialogs")
         for key in HKGUI_ENTRIES {
-            hkVal := this.controls[HotKeyId(key)].value
-            winVal := this.controls[WinKeyId(key)].value
-            if (this.controls[HotKeyId(key)].value) {
-                result := this.controls[WinKeyId(key)].value ? "#" : ""
-                result .= this.controls[HotKeyId(key)].value
+            cHotKey := this.controls[ToHotKeyId(key)]
+            if (cHotKey.value) {
+                result := this.controls[ToWinKeyId(key)].value ? "#" : ""
+                result .= cHotKey.value
             } else {
                 result := APP_DEFAULT_HOTKEYS[key]
             }
