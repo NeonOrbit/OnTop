@@ -30,16 +30,16 @@ class Services {
     }
 
     /* Callback receives two args
-        -> param1: process name
-        -> param2: window uid
+        -> param1: processName
+        -> param2: windowHandle
     */
     setWindowEventCallback(callback) {
         this.windCallback := callback
     }
 
     /* Callback receives two boolean args
-        -> param1: indicates pin/unpin request
-        -> param2: whether to pin the app as well
+        -> param1: shouldPin
+        -> param2: isProgram
     */
     setHotKeyCallback(callback) {
         this.hkeyCallback := BypassThisRef.bind(callback) 
@@ -92,21 +92,21 @@ class Services {
     {
         try {
             process := ""
-            Loop 100 {
+            Loop 100 {  ; Sometimes, process names aren't available immediately.
                 try {
                     process := GetWindowProcess(hWnd)
                 } catch as e {
-                    ; UWP apps takes up to 5 sec
                     if (e.what = "ControlGetHwnd") {
-                        sleep 50
+                        sleep 50  ; UWP apps take longer to become available.
                         continue
                     }
                 }
-                if (process)
+                if (process) {
+                    callback(process, hWnd)
                     break
+                }
                 sleep 10
             }
-            callback(GetWindowProcess(hWnd), hWnd)
         } catch as e {
             WriteLog("Error[onActiveWindowChange]: " . e.message)
         }

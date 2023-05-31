@@ -16,31 +16,31 @@
 
 EXPLORER_PROCESS := "explorer.exe"
 UWP_APPS_PROCESS := "ApplicationFrameHost.exe"
-EXPLORER_VALID_CLASS_01 := "#32770"
-EXPLORER_VALID_CLASS_02 := "CabinetWClass"
+UWP_APPS_CONTROL := "Windows.UI.Core.CoreWindow1"
+EXPLORER_VALID_CLASSES := "^(CabinetWClass|#32770)$"
+INVALID_WINDOW_CLASSES := "^(Windows.UI.Core.CoreWindow|IME|MSCTFIME UI)$"
 
 IsValidWindow(process, uid)
 {
     title := WinGetTitle("ahk_id " . uid)
-    if (process and title ~= ".*\S.*" and !(process = A_ScriptName)) {
-        if (process = EXPLORER_PROCESS) {
-            class := WinGetClass("ahk_id " . uid)
-            if !(class = EXPLORER_VALID_CLASS_01 or 
-                 class = EXPLORER_VALID_CLASS_02) {
-                return false
+    if (process and title and !(process = A_ScriptName)) {
+        cls := WinGetClass("ahk_id " . uid)
+        if !(cls ~= INVALID_WINDOW_CLASSES) {
+            if ((process != EXPLORER_PROCESS) or (cls ~= EXPLORER_VALID_CLASSES)) {
+                return true
             }
         }
-        return true
     }
     return false
 }
 
 ToggleAlwaysOnTop(uid, state)
 {
-    Loop 3 {
+    Loop 3 {  ; AOT flag sometimes fails to set.
         style := WinGetExStyle("ahk_id " . uid)
         if (((style & 0x8) && true) = state)
             break
+        sleep ((A_Index - 1) * 2)
         WinSetAlwaysOnTop(state, "ahk_id " . uid)
     }
 }
@@ -48,8 +48,8 @@ ToggleAlwaysOnTop(uid, state)
 GetWindowProcess(uid) {
     process := WinGetProcessName("ahk_id " . uid)
     if (process = UWP_APPS_PROCESS) {
-        hwnd := ControlGetHwnd("Windows.UI.Core.CoreWindow1", "ahk_id " . uid)
         process := ""
+        hwnd := ControlGetHwnd(UWP_APPS_CONTROL, "ahk_id " . uid)
         if (hwnd) {
             process := WinGetProcessName("ahk_id " . hwnd)
         }
@@ -83,7 +83,6 @@ UpdateWindowState(uid := "", process := "", state := true)
         try {
             parent := DllCall("GetParent", "UInt", uid)
             if (parent and IsValidWindow(WinGetProcessName("ahk_id " . parent), parent)) {
-                sleep 10
                 ToggleAlwaysOnTop(parent, state)
             }
         }
