@@ -4,7 +4,9 @@
 # These files are checked out using CRLF locally
 *.ahk text eol=crlf
 *.nsi text eol=crlf
-*.xml text eol=crlf
 
 # These files are binary and should not be modified
 *.ico binary
+
+# Do not normalize
+*.xml -text
