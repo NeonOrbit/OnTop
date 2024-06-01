@@ -86,6 +86,13 @@ APP_DEFAULT_HOTKEY_FUNCTIONS := Map(
     ID_CLR_PROGRAM, "Unpin Program"
 )
 
+APP_DEFAULT_HOTKEY_FUNCS := Map(
+    ID_PIN_WINDOWS, "Pin",
+    ID_CLR_WINDOWS, "Unpin",
+    ID_PIN_PROGRAM, "Pin App",
+    ID_CLR_PROGRAM, "Unpin App"
+)
+
 APP_DEFAULT_DIR := A_AppData . "\" . APP_NAME
 APP_CONFIG_FILE := APP_DEFAULT_DIR . "\Config.ini"
 APP_LOG_FILE_DIR := APP_DEFAULT_DIR . "\LogFiles"

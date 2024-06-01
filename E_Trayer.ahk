@@ -41,7 +41,7 @@ class Trayer {
         A_TrayMenu.add("Support", this.supportSub)
     }
 
-    update(state)
+    update(state, hotkeys)
     {
         position := state ? 1 : 2
         icon := state ? -APP_ICON : -ALT_ICON
@@ -53,6 +53,20 @@ class Trayer {
         A_IconTip := A_ScriptName . " (" . srvs . ")"
         this.serviceSub.check(position . "&")
         this.serviceSub.uncheck((position ^ 3) . "&")
+        this.updateInfo(hotkeys)
+    }
+
+    updateInfo(hotkeys) {
+        info := StrSplit(A_IconTip, "`n",, 2)[1] . "`n"
+        for id in APP_HOTKEY_IDS {
+            hkey := StrUpper(hotkeys[id])
+            hkey := StrReplace(hkey, "+", "Shift+")
+            hkey := StrReplace(hkey, "#", "Win+")
+            hkey := StrReplace(hkey, "^", "Ctrl+")
+            hkey := StrReplace(hkey, "!", "Alt+")
+            info .= "`n" . APP_DEFAULT_HOTKEY_FUNCS[id] . ":  " . hkey
+        }
+        A_IconTip := info
     }
 
     handleEvents(item, pos, obj)

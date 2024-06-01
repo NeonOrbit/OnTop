@@ -95,7 +95,7 @@ UpdateAppService(state?) {
         AppService.register()
     else
         AppService.unregister()
-    SystemTray.update(state)
+    SystemTray.update(state, Currentkeys())
     UpdateAllWindows(state)
     WriteLog("[Service " (state?"Enabled]":"Disabled]"))
 }
@@ -169,6 +169,7 @@ UpdateHotKeys(hotkeys) {
         UpdatePreference(id, hotkeys[id])
     }
     AppService.setHotKeys(Currentkeys())
+    SystemTray.updateInfo(Currentkeys())
 }
 
 ShowShortcutsWindow() {
