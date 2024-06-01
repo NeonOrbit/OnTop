@@ -42,14 +42,14 @@ class Services {
         -> param2: isProgram
     */
     setHotKeyCallback(callback) {
-        this.hkeyCallback := BypassThisRef.bind(callback) 
+        this.hkeyCallback := BypassThisRef.bind(callback)
     }
 
     registerWindowEvent() {
         if (this.registeredHook)
             this.unregisterWindowEvent()
         this.callAddress := CallbackCreate(this.onActiveWindowChange.bind(this, this.windCallback),, 3)
-        this.registeredHook := DllCall("SetWinEventHook", 
+        this.registeredHook := DllCall("SetWinEventHook",
             "UInt", 0x3, "UInt", 0x3, "Ptr", 0, "Ptr", this.callAddress, "UInt", 0, "UInt", 0, "UInt", 0, "Ptr"
         )
     }
@@ -72,12 +72,12 @@ class Services {
         }
         this.registeredHotKeys.clear()
         try {
-            for id in APP_HOTKEY_IDS {
+            for id, hkey in hotkeys {
                 pin := InStr(id, "pin") ? true : false
                 program := InStr(id, "program") ? true : false
                 options := (program ? "S0" : "S") . " On"
-                HotKey(hotkeys[id], this.onHotkeyPress.bind(this, pin, program), options)
-                this.registeredHotKeys.add(hotkeys[id])
+                HotKey(hkey, this.onHotkeyPress.bind(this, pin, program), options)
+                this.registeredHotKeys.add(hkey)
             }
         } catch as e {
             HandleError(e)

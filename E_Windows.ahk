@@ -18,16 +18,18 @@ EXPLORER_PROCESS := "explorer.exe"
 UWP_APPS_PROCESS := "ApplicationFrameHost.exe"
 UWP_APPS_CONTROL := "Windows.UI.Core.CoreWindow1"
 EXPLORER_VALID_CLASSES := "^(CabinetWClass|#32770)$"
-INVALID_WINDOW_CLASSES := "^(Windows.UI.Core.CoreWindow|IME|MSCTFIME UI)$"
+INVALID_WINDOW_CLASSES := "^(Windows.UI.Core.CoreWindow|Default IME)$"
 
 IsValidWindow(process, uid)
 {
-    title := WinGetTitle("ahk_id " . uid)
-    if (process and title and !(process = A_ScriptName)) {
-        cls := WinGetClass("ahk_id " . uid)
-        if !(cls ~= INVALID_WINDOW_CLASSES) {
-            if ((process != EXPLORER_PROCESS) or (cls ~= EXPLORER_VALID_CLASSES)) {
-                return true
+    try {
+        title := uid ? WinGetTitle("ahk_id " . uid) : ""
+        if (process and title and !(process = A_ScriptName)) {
+            cls := WinGetClass("ahk_id " . uid)
+            if !(cls ~= INVALID_WINDOW_CLASSES) {
+                if ((process != EXPLORER_PROCESS) or (cls ~= EXPLORER_VALID_CLASSES)) {
+                    return true
+                }
             }
         }
     }

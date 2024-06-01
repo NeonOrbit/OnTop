@@ -14,18 +14,12 @@
  * limitations under the License.
  */
 
-HKGUI_ENTRIES := APP_HOTKEY_IDS
-HKGUI_ELEMENTS := Map(
-    ID_PIN_WINDOWS, "Pin Window:",
-    ID_CLR_WINDOWS, "Unpin Window:",
-    ID_PIN_PROGRAM, "Pin Program:",
-    ID_CLR_PROGRAM, "Unpin Program:"
-)
-
 IsWinKeyId(id) => InStr(id, "_wk")
 IsHotKeyId(id) => InStr(id, "_hk")
 ToWinKeyId(id) => StrReplace(id, "_hk") . "_wk"
 ToHotKeyId(id) => StrReplace(id, "_wk") . "_hk"
+
+HKGUI_ENTRIES := APP_HOTKEY_IDS
 
 class Shortcuts {
     controls := Map()
@@ -34,12 +28,12 @@ class Shortcuts {
     ; Callback receives a map containing new hotkeys
     __new(callback) {
         this.controls.clear()
-        this.callback := BypassThisRef.bind(callback) 
+        this.callback := BypassThisRef.bind(callback)
         this.mainGui := Gui("+AlwaysOnTop")
         for id in HKGUI_ENTRIES {
             idWinKey := ToWinKeyId(id)
             idHotKey := ToHotKeyId(id)
-            this.mainGui.add("Text", "xm w100", HKGUI_ELEMENTS[id])
+            this.mainGui.add("Text", "xm w100", APP_DEFAULT_HOTKEY_FUNCTIONS[id] . ": ")
             this.controls[idWinKey] := this.mainGui.add("CheckBox", "yp h20 Center v" . idWinKey, "Win  +")
             this.controls[idHotKey] := this.mainGui.add("Hotkey", "yp h20 v" . idHotKey)
             this.controls[idWinKey].onEvent("Click", this.eventHandler)
@@ -76,9 +70,8 @@ class Shortcuts {
     }
 
     update(values) {
-        for key in HKGUI_ENTRIES {
+        for key, value in values {
             limit := ""
-            value := values[key]
             if InStr(value, "#") {
                 limit := "-Limit"
                 this.controls[ToWinKeyId(key)].value := true

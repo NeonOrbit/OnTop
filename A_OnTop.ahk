@@ -58,13 +58,13 @@ AppStart()
     SystemTray.init(Preference[ID_SERVICE])
     AppService.setWindowEventCallback(HandleWindowEvent)
     AppService.setHotKeyCallback(HandleHotkeyEvent)
-    AppService.setHotKeys(Preference)
+    AppService.setHotKeys(Currentkeys())
     UpdateAppService()
     if (first) {
-        MsgBox(APP_HELP_TEXT,, 0x1000)
+        MsgBox(APP_HELP_TEXT,, 0x40000)
     }
     if ((A_Args.Length < 1) or (A_Args[1] != "--hidden")) {
-        MsgBox(APP_START_HINT,, 0x1000)
+        MsgBox(APP_START_HINT,, 0x40000)
     }
 }
 
@@ -102,9 +102,10 @@ UpdateAppService(state?) {
 
 RefreshApp() {
     FetchAppData()
-    AppService.setHotKeys(Preference)
+    AppService.setHotKeys(Currentkeys())
     MainLogger.max(Preference[ID_LOGFMAX])
     UpdateAppService()
+    FlushLog()
 }
 
 ResetAppData()
@@ -127,11 +128,11 @@ HandleWindowEvent(process, window) {
     }
 }
 
-HandleHotkeyEvent(pin, program) {
+HandleHotkeyEvent(pin, isProgram) {
     try {
         hWindow := WinGetID("A")
         pin_msg := pin ? "Pinned" : "Unpinned"
-        if (!program) {
+        if (!isProgram) {
             ToggleAlwaysOnTop(hWindow, pin)
             WriteLog(pin_msg . " window: " . hWindow)
         } else {
@@ -150,7 +151,7 @@ HandleHotkeyEvent(pin, program) {
             UpdateWindowState(, wProcess, false)
         }
         msg := "Failed to " . (pin ? "pin" : "unpin")
-        msg .= " the " . (program ? "program" : "window") . ": "
+        msg .= " the " . (isProgram ? "program" : "window") . ": "
         msg .= IsSet(hWindow) ? GetWindowDetails(hWindow) : "???"
         HandleError(e, false, msg)
     }
@@ -167,11 +168,11 @@ UpdateHotKeys(hotkeys) {
     for id in APP_HOTKEY_IDS {
         UpdatePreference(id, hotkeys[id])
     }
-    AppService.setHotKeys(Preference)
+    AppService.setHotKeys(Currentkeys())
 }
 
 ShowShortcutsWindow() {
-    Shortcuts(UpdateHotKeys).show(Preference)
+    Shortcuts(UpdateHotKeys).show(Currentkeys())
 }
 
 FetchAppData()
@@ -206,6 +207,14 @@ UpdateProcessList(process, add)
     }
 }
 
+Currentkeys() {
+    hkeys := ExMap()
+    for id in APP_HOTKEY_IDS {
+        hkeys[id] := Preference[id]
+    }
+    return hkeys
+}
+
 FlushLog() {
     WriteLog("", true)
 }
@@ -213,7 +222,9 @@ FlushLog() {
 WriteLog(msg, flush := false)
 {
     if (Preference[ID_LOGGING]) {
-        MainLogger.log(msg, flush)
+        try {
+            MainLogger.log(msg, flush)
+        }
     }
 }
 
@@ -232,7 +243,7 @@ HandleError(e, fatal := true, msg := "", notify := true)
         errMsg .= "The program will exit.`n"
     WriteLog("Error: " . errMsg)
     if (notify) {
-        MsgBox(errMsg,, 0x1030)
+        MsgBox(errMsg,, 0x40030)
     }
     if (fatal) {
         ExitApp 1

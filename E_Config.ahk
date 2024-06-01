@@ -18,7 +18,7 @@ APP_NAME := "OnTop", APP_VERSION := "2.1.1"
 
 ;@Ahk2Exe-Let Name = %A_PriorLine~U)^(.+"){1}(.+)".*$~$2%
 ;@Ahk2Exe-Let Version = %A_PriorLine~U)^(.+"){3}(.+)".*$~$2%
-;@Ahk2Exe-ExeName %U_Name%-%U_Version%.exe%
+;@Ahk2Exe-ExeName Core-%U_Version%.exe%
 ;@Ahk2Exe-UpdateManifest 1, %U_Name%, %U_Version%.0
 ;@Ahk2Exe-SetName %U_Name%
 ;@Ahk2Exe-SetVersion %U_Version%.0
@@ -35,7 +35,9 @@ APP_NAME := "OnTop", APP_VERSION := "2.1.1"
 */
 
 #SingleInstance Force
+#Requires AutoHotkey v2.0+
 
+Persistent true
 SetTitleMatchMode 1
 DetectHiddenWindows true
 
@@ -77,6 +79,13 @@ APP_DEFAULT_HOTKEYS := Map(
     ID_CLR_PROGRAM, DEFKEY_CLR_PROGRAM
 )
 
+APP_DEFAULT_HOTKEY_FUNCTIONS := Map(
+    ID_PIN_WINDOWS, "Pin Window",
+    ID_CLR_WINDOWS, "Unpin Window",
+    ID_PIN_PROGRAM, "Pin Program",
+    ID_CLR_PROGRAM, "Unpin Program"
+)
+
 APP_DEFAULT_DIR := A_AppData . "\" . APP_NAME
 APP_CONFIG_FILE := APP_DEFAULT_DIR . "\Config.ini"
 APP_LOG_FILE_DIR := APP_DEFAULT_DIR . "\LogFiles"
@@ -109,4 +118,4 @@ APP_HELP_TEXT := ""
 . "[*] The Pin-Window* ability is temporary, which means it will remain active only until the window is closed.`n"
 . "[*] The Pin-Program* ability is sticky, which means it will remain in effect until the user manually unpins it.`n"
 . "`n"
-. "To change the default shortcut keys, please go to the OnTop tray menu.`n"
+. "To change the default shortcut keys, please go to the OnTop tray menu and click on 'Shortcuts'.`n"

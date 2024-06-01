@@ -74,11 +74,11 @@ class Trayer {
                 FlushLog()
                 Run APP_LOG_FILE_DIR
             case "Help":
-                MsgBox(APP_HELP_TEXT,, 0x1000)
+                MsgBox(APP_HELP_TEXT,, 0x40000)
             case "Update":
                 Run APP_UPDATE_URL
             case "About":
-                MsgBox(APP_ABOUT_TEXT,, 0x1000)
+                MsgBox(APP_ABOUT_TEXT,, 0x40000)
             case "Exit":
                 ExitApp
         }
@@ -88,7 +88,7 @@ class Trayer {
     {
         Critical("On")
         if (reset) {
-            if (MsgBox("Reset to default?",, 0x1134) = "Yes") {
+            if (MsgBox("Reset to default?",, 0x40134) = "Yes") {
                 UpdateAllWindows(false)
                 ResetAppData()
             } else {
@@ -109,6 +109,6 @@ class Trayer {
                 list .= "  " . A_Index . ". " . item "`n"
             }
         }
-        MsgBox(list,, 0x1000)
+        MsgBox(list,, 0x40000)
     }
 }

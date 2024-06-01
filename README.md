@@ -3,10 +3,9 @@
 A simple program for `WindowsOS` that allows you to pin a window on the top of all other windows.
 
 ### Description
-The program allows you to keep a window always on top. 
-It also has options to pin an app (all windows of an app), 
+The program allows you to keep a window always on top.
+It also has options to pin an app (all windows of an app),
 which remembers the app and automatically pins any windows open from it.
-
 
 ### Features
 - Pin Window `(win+space)`:  Keeps a window on top of all other windows.
@@ -19,6 +18,21 @@ The `Pin Program` ability is sticky, which means it will remain in effect until 
 
 To change the default shortcut keys, please right-click on the `OnTop` tray icon and open the `Shortcuts` menu.
 
+### Download
+- Latest version: [download](https://github.com/NeonOrbit/OnTop/releases/latest)
+
+---------------------------------------------
+
+### Build Instructions:
+Compile from the source.
+- Clone or download the repository.
+- Download and install [AutoHotkey](https://github.com/AutoHotkey/AutoHotkey/releases).
+- Open `AutoHotkey Desh` and select `Compile` tool (download if necessary).
+- Drag and Drop `A_OnTop.ahk` into `Source (script file)` field and select `Convert`.
+- Download and install [NSIS](https://nsis.sourceforge.io/Download).
+- Open `NSIS` and select `Compile NSI Script`.
+- Drag and Drop `Installer.nsi` into the NSI Compiler window.
+- Output: `OnTop-version.exe`
 
 ## License
 

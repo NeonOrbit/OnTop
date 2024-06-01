@@ -21,12 +21,15 @@
 !define APP_VERSION "2.1.1"
 !define DEVELOPER "NeonOrbit"
 
+!define LOG_DIR "LogFiles"
+!define CONFIG_FILE "Config.ini"
+
 !define MUI_ICON "Resource\Icon.ico"
 !define MUI_UNICON "Resource\IconAlt.ico"
 !define XML_AUTO_LAUNCH "Resource\AutoLaunch.xml"
 !define AUTO_LAUNCH_NAME "${APP_NAME}AutoLaunch"
 
-!define SRC_FILE "${APP_NAME}-${APP_VERSION}.exe"
+!define SRC_FILE "Core-${APP_VERSION}.exe"
 
 
 ; ---------------------- Installer Info ----------------------;
@@ -44,7 +47,7 @@
 !define MUI_FINISHPAGE_BUTTON "Finish"
 
 !define MUI_HEADERIMAGE
-!define MUI_HEADERIMAGE_BITMAP_STRETCH FitControl 
+!define MUI_HEADERIMAGE_BITMAP_STRETCH FitControl
 !define MUI_HEADERIMAGE_BITMAP "${NSISDIR}\Contrib\Graphics\Header\win.bmp"
 !define MUI_WELCOMEFINISHPAGE_BITMAP "${NSISDIR}\Contrib\Graphics\Wizard\nsis3-grey.bmp"
 
@@ -80,12 +83,13 @@ InstallDirRegKey HKLM "Software\${APP_NAME}" "Install_Dir"
 !insertmacro MUI_PAGE_FINISH
 !insertmacro MUI_LANGUAGE "English"
 
+!finalize 'Del /Q /F "${SRC_FILE}"'
 
 ; ---------------------- Installer Pages ----------------------;
 
 Section "Core (required)"
     SectionIn RO
-    
+
     ; Save installation path
     WriteRegStr HKLM "Software\${APP_NAME}" "Install_Dir" "$INSTDIR"
 
@@ -152,7 +156,13 @@ Section "Uninstall"
     ; Remove files
     Delete "$INSTDIR\${APP_NAME}.exe"
     Delete "$INSTDIR\uninstall.exe"
-    
+    RMDir "$INSTDIR"
+
+    ; Remove config dir
+    Delete "$APPDATA\${APP_NAME}\${CONFIG_FILE}"
+    RMDir "$APPDATA\${APP_NAME}\${LOG_DIR}"
+    RMDir "$APPDATA\${APP_NAME}"
+
     ; Remove auto-start entry
     nsExec::Exec 'schtasks /delete /tn "${AUTO_LAUNCH_NAME}" /f'
 
@@ -163,8 +173,6 @@ Section "Uninstall"
     ; Remove shortcuts
     Delete "$DESKTOP\${APP_NAME}.lnk"
     Delete "$SMPROGRAMS\${APP_NAME}.lnk"
-
-    RMDir "$INSTDIR"
 SectionEnd
 
 
