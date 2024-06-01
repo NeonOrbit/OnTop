@@ -58,9 +58,11 @@ GetWindowProcess(uid) {
 }
 
 GetWindowDetails(uid) {
-    info := uid ? WinGetTitle("ahk_id " . uid) : ""
-    info .= uid ? " | " . WinGetProcessName("ahk_id " . uid)  : ""
-    return info
+    try {
+        return WinGetProcessName("ahk_id " . uid) . " (" . uid . ")"
+    } catch as e {
+        return uid
+    }
 }
 
 UpdateWindowState(uid := "", process := "", state := true)
@@ -73,18 +75,20 @@ UpdateWindowState(uid := "", process := "", state := true)
         index := list.length + 1
         While(--index) {
             id := list[index]
-            if IsValidWindow(process, id) {
-                ToggleAlwaysOnTop(id, state)
+            if uid != id and IsValidWindow(process, id) {
+                try {
+                    ToggleAlwaysOnTop(id, state)
+                }
             }
         }
     }
     if (uid) {
-        ToggleAlwaysOnTop(uid, state)
         try {
             parent := DllCall("GetParent", "UInt", uid)
             if (parent and IsValidWindow(WinGetProcessName("ahk_id " . parent), parent)) {
                 ToggleAlwaysOnTop(parent, state)
             }
         }
+        ToggleAlwaysOnTop(uid, state)
     }
 }

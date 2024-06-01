@@ -117,8 +117,13 @@ ResetAppData()
 
 HandleWindowEvent(process, window) {
     if ProcessList.has(process) and IsValidWindow(process, window) {
-        UpdateWindowState(window)
-        WriteLog("Auto pinned: " . process . " (" . window . ")")
+        try {
+            UpdateWindowState(window)
+            WriteLog("Auto pinned: " . process . " (" . window . ")")
+        } catch as e {
+            msg := "Auto-pin failed: " . process . " (" . window . ")"
+            HandleError(e, false, msg , false)
+        }
     }
 }
 
@@ -140,10 +145,14 @@ HandleHotkeyEvent(pin, program) {
             }
         }
     } catch as e {
+        try {
+            UpdateProcessList(wProcess, false)
+            UpdateWindowState(, wProcess, false)
+        }
         msg := "Failed to " . (pin ? "pin" : "unpin")
-        msg .= " the " . (program ? "program" : "window")
-        details := IsSet(hWindow) ? ": " . GetWindowDetails(hWindow) : ""
-        HandleError(e, false, msg . details)
+        msg .= " the " . (program ? "program" : "window") . ": "
+        msg .= IsSet(hWindow) ? GetWindowDetails(hWindow) : "???"
+        HandleError(e, false, msg)
     }
 }
 
@@ -208,7 +217,7 @@ WriteLog(msg, flush := false)
     }
 }
 
-HandleError(e, fatal := true, msg := "")
+HandleError(e, fatal := true, msg := "", notify := true)
 {
     errMsg := (msg ? msg : "An Error Occured!") . "`n`n"
     if (e.message ~= ".*\S.*")
@@ -222,7 +231,9 @@ HandleError(e, fatal := true, msg := "")
     if (fatal)
         errMsg .= "The program will exit.`n"
     WriteLog("Error: " . errMsg)
-    MsgBox(errMsg,, 0x1030)
+    if (notify) {
+        MsgBox(errMsg,, 0x1030)
+    }
     if (fatal) {
         ExitApp 1
     }
