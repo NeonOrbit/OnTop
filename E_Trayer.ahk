@@ -21,21 +21,23 @@ TrayListSupp := "Log,Help,Update,About"
 class Trayer {
     serviceSub := Menu()
     supportSub := Menu()
-    eventHandler := this.handleEvents.bind(this)
+    menuHandler := this.onMenuSelect.bind(this)
+    trayHandler := this.onTrayEvents.bind(this)
 
     init(state) {
+        OnMessage(0x404, this.trayHandler)
         A_TrayMenu.delete()
         Loop Parse, TrayListMain, ","
         {
             if (!A_LoopField)
                 A_TrayMenu.add()
             else
-                A_TrayMenu.add(A_LoopField, this.eventHandler)
+                A_TrayMenu.add(A_LoopField, this.menuHandler)
         }
         Loop Parse, TrayListSrvc, ","
-            this.serviceSub.add(A_LoopField, this.eventHandler)
+            this.serviceSub.add(A_LoopField, this.menuHandler)
         Loop Parse, TrayListSupp, ","
-            this.supportSub.add(A_LoopField, this.eventHandler)
+            this.supportSub.add(A_LoopField, this.menuHandler)
         A_TrayMenu.disable("1&")
         A_TrayMenu.add("Service", this.serviceSub)
         A_TrayMenu.add("Support", this.supportSub)
@@ -69,7 +71,16 @@ class Trayer {
         A_IconTip := info
     }
 
-    handleEvents(item, pos, obj)
+    onTrayEvents(wParam, lParam, uMsg, hWnd)
+    {
+        if (lParam = 0x202) ; WM_LBUTTONUP
+        {
+            A_TrayMenu.show()
+            return 0 ; Consume
+        }
+    }
+
+    onMenuSelect(item, pos, obj)
     {
         state := pos = 1 ? true : false
         switch (item) {
