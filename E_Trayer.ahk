@@ -94,7 +94,9 @@ class Trayer {
             case "About":
                 MsgBox(APP_ABOUT_TEXT,, 0x40000)
             case "Exit":
-                ExitApp
+                if (MsgBox("Exit the app now?",, 0x40134) = "Yes") {
+                    ExitApp(0)
+                }
         }
     }
 
