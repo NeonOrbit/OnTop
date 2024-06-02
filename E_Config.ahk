@@ -14,7 +14,7 @@
  * limitations under the License.
  */
 
-APP_NAME := "OnTop", APP_VERSION := "2.1.1"
+APP_NAME := "OnTop", APP_VERSION := "2.2.1"
 
 ;@Ahk2Exe-Let Name = %A_PriorLine~U)^(.+"){1}(.+)".*$~$2%
 ;@Ahk2Exe-Let Version = %A_PriorLine~U)^(.+"){3}(.+)".*$~$2%

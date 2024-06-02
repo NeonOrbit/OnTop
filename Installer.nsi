@@ -18,7 +18,7 @@
 !include "FileFunc.nsh"
 
 !define APP_NAME "OnTop"
-!define APP_VERSION "2.1.1"
+!define APP_VERSION "2.2.1"
 !define DEVELOPER "NeonOrbit"
 
 !define LOG_DIR "LogFiles"
